@@ -10,6 +10,7 @@ app = FastAPI()
 class User(BaseModel):
     name: str
     age: int
+    home: str
 
 # Connect to SQLite database (or create it if it doesn't exist)
 conn = sqlite3.connect('example.db', check_same_thread=False)
@@ -20,14 +21,15 @@ cursor.execute('''
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY,
     name TEXT NOT NULL,
-    age INTEGER NOT NULL
+    age INTEGER NOT NULL,
+    home TEXT NOT NULL
 )
 ''')
 conn.commit()    
 
 @app.post("/users/", response_model=User, status_code=201)
 def create_user(user: User):
-    cursor.execute("INSERT INTO users (name, age) VALUES (?, ?)", (user.name, user.age))
+    cursor.execute("INSERT INTO users (name, age,home) VALUES (?, ?, ?)", (user.name, user.age,user.home))
     conn.commit()
     return user
 
@@ -36,6 +38,6 @@ def get_users():
     cursor.execute("SELECT * FROM users")
     users = cursor.fetchall()
     result = []
-    for row, name, age in users:
-        result.append(User(name=name, age=age))
+    for row, name, age, home in users:
+        result.append(User(name=name, age=age, home=home))
     return result
